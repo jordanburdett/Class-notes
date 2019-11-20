@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <% include ../partials/header.ejs %>
+    <link rel="stylesheet" href="stylesheets/sidebar.css">
+</head>
+
+<body style="background-color:rgb(43, 42, 42);">
+
+
+    <!--side bar-->
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="active">
+            <!--This is the sidebar, everything in this div will show when toggled-->\
+            <div class="sidebar-header">
+                <ul class="list-unstyled components">
+                    <p>Sidebar</p>
+
+                    <li>
+                        <a href="#">About</a>
+                    </li>
+                    <li>
+                        <a href="#">Dashboard</a>
+                    </li>
+
+                    <li>
+                        <a href="#">Add Classes</a>
+                    </li>
+                    <li>
+                        <a href="#">Account Settings</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- We'll fill this with dummy content basically all the page -->
+            <div class="container-fluid" style="margin: 3rem;">
+                <nav class="navbar navbar-dark bg-dark fixed-top">
+                    <button class="navbar-item bg-dark" type="button" onclick="toggleSideBar()" id="toggleSideBarButton"
+                        style="border:none;">
+
+                        <i class="fas fa-angle-right fa-2x" style="color:whitesmoke;" id="sidebarIcon"></i>
+
+
+                    </button>
+
+                    <div class="navbar-brand">Home</div>
+                    <button class="navbar-toggler" type="button" style="border:none;" data-toggle="collapse"
+                        data-target="#collapsingNavbarXs">
+                        <i class="fas fa-search" style="color:whitesmoke;"></i>
+                    </button>
+
+                    <div class="navbar-collapse collapse" id="collapsingNavbarXs">
+                        <form class="form-inline">
+                            <input class="form-control mr-2" type="text" placeholder="Search" aria-label="Search"
+                                id="searchBar">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </form>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- example of a card that will need to be generated and returned as html-->
+            <div class="container-flud" style="padding-left: 2rem;">
+                <div class="row">
+
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">CS-313</h5>
+                                <p class="card-text">
+                                    Server side web development</p>
+                                <a href="#" class="btn btn-primary">Go somewhere</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <% include ../partials/footer.ejs %>
+    <script>
+
+
+
+        //On page load run this function
+        window.onload = function() {
+            if(amILoggedIn()) {
+
+            }
+            else {
+                window.location = "/login";
+            }
+        }
+
+        function amILoggedIn() {
+            // This would contact the server and check to see if the user is logged in
+            // but for now you dont get to do that.....
+            // TODO
+            return true;
+        }
+
+        //this function will change the state of the sidebar
+        var active = false;
+        function toggleSideBar() {
+
+            console.log("toggling");
+            $('#sidebar').toggleClass('active');
+
+            //change the arrow to face the right direction
+            if (active) {
+                $('#sidebarIcon').removeClass('fas fa-angle-left');
+                $('#sidebarIcon').addClass('fas fa-angle-right');
+            }
+            else {
+                $('#sidebarIcon').removeClass('fas fa-angle-right');
+                $('#sidebarIcon').addClass('fas fa-angle-left');
+            }
+
+
+            if (active) {
+                active = false;
+            }
+            else {
+                active = true;
+            }
+
+        }
+    </script>
+</body>
+
+</html>
