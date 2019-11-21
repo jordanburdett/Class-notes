@@ -3,10 +3,82 @@
 
 <head>
     <% include ../partials/header.ejs %>
+    <style>
+        .display-4 {
+            color: whitesmoke;
+            font-size: 3rem;
+            text-align: center;
+            padding: 2rem;
+            padding-bottom: 5rem;
+        }
+
+        .loginButtons {
+            width: 20rem;
+
+        }
+
+        .container {
+            width: 50%;
+        }
+
+        @media only screen and (max-width: 800px) {
+            .container {
+                width: 100%;
+            }
+        }
+        
+    </style>
 </head>
 
-<body>
-    <h1>Login page.... in progress</h1>
+<body style="background-color:rgb(31, 31, 31);">
+
+    <div class="display-4">Welcome to my class scheduling app</div>
+
+    <div class="row">
+        <div class="col text-center">
+            <button class="btn btn-secondary" style="margin-bottom:5px;" onclick="loadSignUp()">
+                <div class="loginButtons">Sign Up</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <button class="btn btn-primary" style="margin-bottom:3rem;">
+                <div class="loginButtons" onclick="loadLogin()">Login</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loginForm"></div>
+    </div>
+
+
+    <% include ../partials/footer.ejs %>
+
+    <script>
+        function loadLogin() {
+            console.log("in load login 2");
+
+            $.get('/getLoginForm', function (data, err) {
+
+                document.getElementById('loginForm').innerHTML = data;
+                console.log("form loaded successfully");
+            })
+        }
+
+        function loadSignUp() {
+            $('loginForm').load('/getSignUpForm', function (data, err) {
+                if (err) {
+                    console.log(err);
+                    return "oops I should have better error messages....."
+                }
+
+                console.log("form loaded successfully");
+            })
+        }
+    </script>
 </body>
 
 </html>
