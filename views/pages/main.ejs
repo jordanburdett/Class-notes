@@ -66,18 +66,9 @@
 
             <!-- example of a card that will need to be generated and returned as html-->
             <div class="container-flud" style="padding-left: 2rem;">
-                <div class="row">
+                <div class="row" id="classDisplay">
 
-                    <div class="col">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">CS-313</h5>
-                                <p class="card-text">
-                                    Server side web development</p>
-                                <a href="#" class="btn btn-primary">Go somewhere</a>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Classes will be dynamically loaded here from the server -->
 
                 </div>
             </div>
@@ -91,15 +82,33 @@
 
 
         //On page load run this function
-        window.onload = function() {
-            if(amILoggedIn()) {
-
+        window.onload = function () {
+            if (amILoggedIn()) {
+                loadClasses();
             }
             else {
                 window.location = "/login";
             }
         }
 
+        // This loads all the classes you have if youre logged in
+        function loadClasses() {
+            $.get('/getClasses', function (classes, status) {
+
+                console.log(classes);
+                classes.forEach(value => {
+                    displayClass(value);
+                });
+            })
+        }
+
+        // this will display a class to the screen
+        function displayClass(_class) {
+            $('#classDisplay').append(
+                "<div class='col'><div class= 'card' id='classCard" + _class.id + "'><div class='card-body'><h5 class='card-title'>" + _class.class_name + "</h5><p class='card-text'>" + _class.short_desc + "</p><button class='btn btn-primary' onclick='expandCard(" + _class.id + "'>expand class</button></div></div></div>");
+        }
+
+        // ask the server if I am logged in
         function amILoggedIn() {
             // This would contact the server and check to see if the user is logged in
             // but for now you dont get to do that.....
