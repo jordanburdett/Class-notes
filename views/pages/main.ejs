@@ -65,13 +65,13 @@
             </div>
 
             <!-- example of a card that will need to be generated and returned as html-->
-            <div class="container-flud" style="padding-left: 2rem;">
-                <div class="row" id="classDisplay">
 
-                    <!-- Classes will be dynamically loaded here from the server -->
+            <div class="flex-container" id="classDisplay">
 
-                </div>
+                <!-- Classes will be dynamically loaded here from the server -->
+
             </div>
+
         </div>
     </div>
 
@@ -105,7 +105,7 @@
         // this will display a class to the screen
         function displayClass(_class) {
             $('#classDisplay').append(
-                "<div class='col'><div class= 'card' id='classCard" + _class.id + "'><div class='card-body'><h5 class='card-title'>" + _class.class_name + "</h5><p class='card-text'>" + _class.short_desc + "</p><button class='btn btn-primary' onclick='expandCard(" + _class.id + "'>expand class</button></div></div></div>");
+                "<div class='class-flex' id='classCard" + _class.id + "'><h5 class='class-title'>" + _class.class_name + "</h5><p class='class-content'>" + _class.short_desc + "</p><button class='class-button' onclick='expandCard(" + _class.id + ")'>expand class</button></div></div>");
         }
 
         // ask the server if I am logged in
@@ -141,6 +141,18 @@
                 active = true;
             }
 
+        }
+
+        function expandCard(cardId) {
+            console.log("in expand card " + cardId);
+
+            $('#classCard' + cardId).toggleClass('cardExpanded')
+
+            // make ajax request to get assignments and class description and class note
+
+
+
+            // modify the card with more information
         }
     </script>
 </body>

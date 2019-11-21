@@ -18,8 +18,26 @@ CREATE TABLE class
 , note          varchar(10000)
 );
 
+CREATE TABLE assignments
+( id            SERIAL PRIMARY KEY  NOT NULL
+, class_id      INT                 NOT NULL REFERENCES class(id)
+, user_id       INT                 NOT NULL REFERENCES user_account(id)
+, title         VARCHAR(60)         NOT NULL
+, description   VARCHAR(1000)       NOT NULL
+, due_date      DATE                NOT NULL);
+
+CREATE TABLE notes
+( id            SERIAL PRIMARY KEY  NOT NULL
+, class_id      INT                 NOT NULL REFERENCES class(id)
+, user_id       INT                 NOT NULL REFERENCES user_account(id)
+, assign_id     INT                 NOT NULL REFERENCES assignments(id)
+, note_title    VARCHAR(60)         NOT NULL
+, note_content  VARCHAR(10000)      NOT NULL
+, date_modified DATE                NOT NULL
+);
 
 
+/* INSERTS */
 INSERT INTO user_account
 ( first_name
 , last_name
@@ -68,5 +86,60 @@ VALUES
 , 'Learn how to communicate! yay!'
 );
 
+INSERT INTO class
+( user_id
+, class_name
+, short_desc
+, DESCRIPTION
+)
+VALUES
+( 1
+, 'CS-246'
+, 'Software Design and Development'
+, 'android...'
+);
+
+INSERT INTO assignments
+( class_id
+, user_id
+, title
+, description
+, due_date
+) VALUES
+( 1
+, 1
+, 'Project 2'
+, 'Create a web application using node.js'
+, '2019-12-1');
+
+INSERT INTO assignments
+( class_id
+, user_id
+, title
+, description
+, due_date
+) VALUES
+( 2
+, 1
+, 'Team Proposal'
+, 'Create a proposal of a technical problem that needs fixing.....'
+, '2019-12-8');
+
+INSERT INTO notes
+( class_id
+, assign_id
+, user_id
+, note_title
+, note_content
+, date_modified)
+ VALUES 
+( 1
+, 1
+, 1
+, 'Project Ideas'
+, '1. recreate the first project that i did...\n2. Create a class assignment/scheduling application.\n3. Drop the class\n4. Drop out of College...'
+, CURRENT_DATE);
+
+/* query tests */
 select user_id, class_name, short_desc from class
 where user_id = 1;

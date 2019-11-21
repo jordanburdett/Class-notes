@@ -1,9 +1,8 @@
-const express = require('express')
-const path = require('path')
+const express  = require('express')
+const path     = require('path')
 var bodyParser = require("body-parser");
 const { Pool } = require('pg');
-const session = require('express-session');
-const PORT = process.env.PORT || 5000
+const PORT     = process.env.PORT || 5000
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const connectionString = process.env.DATABASE_URL || 'postgres://jmlwlpbcygykii:2f25078c1b40aa0e34cc00289105fc9ec4840796218632593134ad4ed9790035@ec2-174-129-253-125.compute-1.amazonaws.com:5432/dfccmfhmslfb1a?ssl=true'
 const pool = new Pool({ connectionString: connectionString });
@@ -15,11 +14,11 @@ express()
   .use(bodyParser.urlencoded({ extended: false }))
   .use(bodyParser.json())
   .use(express.static(path.join(__dirname, 'public')))
-  .use(session({secret: 'ssshhhhh'}))
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', function (req, res) {
     //Check for login here and then send the correct page  
+    console.log(req);
     res.render('pages/main')
   })
   .get('/getClasses', function (req, res) {
