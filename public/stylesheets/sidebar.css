@@ -1,8 +1,13 @@
+:root {
+    --text-color: whitesmoke;
+    --background-color: rgb(43, 42, 42);
+    --background-accent: #1a1a1a;
+    --navbar-color: #2e3338;
+}
 
-
-
-
-
+body {
+    background-color:var(--background-color);
+}
 
 .flex-container {
     position:absolute;
@@ -17,8 +22,9 @@
     margin-top:3rem;
     margin-right:3rem;
     width: 20%;
-    background-color: #1a1a1a;
+    background-color: var(--background-accent);
     color:whitesmoke;
+    transition: all 0.5s;
 }
 
 .class-title {
@@ -97,7 +103,7 @@ a, a:hover, a:focus {
 /* #343a40   */
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #2e3338;
+    background: var(--navbar-color);
 }
 
 #sidebar ul.components {
@@ -116,18 +122,18 @@ a, a:hover, a:focus {
     display: block;
 }
 #sidebar ul li a:hover {
-    color: #2e3338;
+    color: var(--navbar-color);
     background: #fff;
 }
 
 #sidebar ul li.active > a, a[aria-expanded="true"] {
     color: #fff;
-    background: #2e3338;
+    background: var(--navbar-color);
 }
 ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
-    background: #2e3338;
+    background: var(--navbar-color);
 }
 .wrapper {
     display: flex;
@@ -141,7 +147,7 @@ ul ul a {
     left: 0;
     height: 100vh;
     z-index: 999;
-    background: #2e3338;
+    background: var(--navbar-color);
     color: whitesmoke;
     transition: all 0.3s;
 }
