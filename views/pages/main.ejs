@@ -37,7 +37,6 @@
 
         <!-- Page Content -->
         <div id="content">
-            <!-- We'll fill this with dummy content basically all the page -->
             <div class="container-fluid" style="margin: 3rem;">
                 <nav class="navbar navbar-dark bg-dark fixed-top">
                     <button class="navbar-item bg-dark" type="button" onclick="toggleSideBar()" id="toggleSideBarButton"
@@ -71,7 +70,7 @@
             </div>
 
         </div>
-    </div> 
+    </div>
 
 
     <% include ../partials/footer.ejs %>
@@ -89,11 +88,16 @@
             }
         }
 
+        var shortDescriptionLookup = new Object();
+        var longDescriptionLookup = new Object();
+        var buttonLookup = new Object();
+        var classNoteLookup = new Object();
+
         // This loads all the classes you have if youre logged in
         function loadClasses() {
             $.get('/getClasses', function (classes, status) {
 
-                console.log(classes);
+
                 classes.forEach(value => {
                     displayClass(value);
                 });
@@ -103,7 +107,17 @@
         // this will display a class to the screen
         function displayClass(_class) {
             $('#classDisplay').append(
-                "<div class='class-flex' id='classCard" + _class.id + "'><h5 class='class-title'>" + _class.class_name + "</h5><p class='class-content'>" + _class.short_desc + "</p><button class='class-button' onclick='expandCard(" + _class.id + ")'>expand class</button></div></div>");
+                "<div class='class-flex' id='classCard" + _class.id + "'><h5 class='class-title' id='classCardTitle" + _class.id + "'>" + _class.class_name + "</h5><p class='class-content' id='classCardContent" + _class.id + "'>" + _class.short_desc + "</p><button class='class-button' onclick='expandCard(" + _class.id + ")' id='expandCardButton" + _class.id + "'>Expand Class</button></div></div>");
+            
+            if (_class.note) {
+                console.log("THERE IS A NOTE!");
+            }    
+            else {
+                console.log("THERE IS NO NOTE");
+            }
+            classNoteLookup[_class.id] = _class.note;
+            longDescriptionLookup[_class.id] = _class.description;
+            shortDescriptionLookup[_class.id] = _class.short_desc;
         }
 
         // ask the server if I am logged in
@@ -118,7 +132,7 @@
         var active = false;
         function toggleSideBar() {
 
-            console.log("toggling");
+
             $('#sidebar').toggleClass('active');
 
             //change the arrow to face the right direction
@@ -141,16 +155,110 @@
 
         }
 
-        function expandCard(cardId) {
-            console.log("in expand card " + cardId);
+        async function expandCard(cardId) {
+
 
             $('#classCard' + cardId).toggleClass('cardExpanded')
 
             // make ajax request to get assignments and class description and class note
+            const response = await fetch('/getAssignments?class_id=' + cardId);
+            const assignments = await response.json();
 
 
 
-            // modify the card with more information
+
+
+            if (document.getElementById('classCardTitle' + cardId).className == "class-title") {
+                document.getElementById('classCardTitle' + cardId).className = "class-title-expanded";
+                document.getElementById('classCardContent' + cardId).innerText = longDescriptionLookup[cardId];
+                document.getElementById('classCardContent' + cardId).className = "class-content-expanded";
+                buttonLookup[cardId] = document.getElementById('expandCardButton' + cardId).outerHTML;
+                document.getElementById('expandCardButton' + cardId).remove();
+
+
+                let newAssign = "<div class='flex-assignments-container' id='assignmentHolder'>";
+                console.log(newAssign);
+
+                assignments.forEach(value => {
+                    newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
+                    newAssign += "<div class='flex-assignments-title' id='assignmentTitle" + value.id + "'>";
+                    newAssign += value.title;
+
+                    if (value.finished) {
+                        newAssign += "<i class='fas fa-check-square checked' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
+                    }
+                    else {
+                        newAssign += "<i class='fas fa-check-square check-icon' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
+                    }
+                    newAssign += "</div>";
+
+                    newAssign += "<div class='flex-assignments-desc' id'assignmentDesc" + value.id + "'>" + value.description + "</div>";
+
+
+                    newAssign += "</div>";
+                })
+                console.log(assignments);
+                newAssign += "</div>";
+
+                document.getElementById('classCard' + cardId).innerHTML += newAssign;
+                
+                if (classNoteLookup[cardId]) {
+                    document.getElementById('classCard' + cardId).innerHTML += "<h2 style='padding-left:1%;'> Note: </h1>";
+                    document.getElementById('classCard' + cardId).innerHTML += "<div class='class-note'>" + classNoteLookup[cardId] + "</div>";
+                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='openNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Edit Note</button>"; 
+                }
+                else {
+                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='openNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Make Note</button>"; 
+                }
+                
+                document.getElementById('classCard' + cardId).innerHTML += buttonLookup[cardId];
+                document.getElementById('expandCardButton' + cardId).className = 'button-expand';
+                document.getElementById('expandCardButton' + cardId).innerText = 'Shrink Class';
+
+
+            }
+            else {
+                document.getElementById('classCardTitle' + cardId).className = "class-title";
+                document.getElementById('classCardContent' + cardId).innerText = shortDescriptionLookup[cardId];
+                document.getElementById('classCardContent' + cardId).className = "class-content";
+                document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
+                document.getElementById('expandCardButton' + cardId).className = 'class-button';
+                document.getElementById('makeNoteButton' + cardId).remove();
+
+                assignments.forEach(value => {
+                    document.getElementById('assignment' + value.id).remove();
+                })
+
+                document.getElementById('assignmentHolder').remove();
+
+
+            }
+
+        }
+
+        function checkAssign(assignmentId) {
+            console.log("in check Assign with " + assignmentId);
+
+            if (document.getElementById('assignIcon' + assignmentId).className == "fas fa-check-square check-icon") {
+                document.getElementById('assignIcon' + assignmentId).className = "fas fa-check-square checked";
+                //update information regarding done assignment
+
+                $.post('/checkAssign', {
+                    assignmentId: assignmentId
+                }, (data, status) => {
+                    console.log(status);
+                })
+
+            }
+            else {
+                document.getElementById('assignIcon' + assignmentId).className = "fas fa-check-square check-icon"
+                //update database that the assignment is not done.
+                $.post('/unCheckAssign', {
+                    assignmentId: assignmentId
+                }, (data, status) => {
+                    console.log(status);
+                })
+            }
         }
     </script>
 </body>

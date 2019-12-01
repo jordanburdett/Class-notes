@@ -1,5 +1,7 @@
 drop table user_account cascade;
 drop table class CASCADE;
+drop table assignments CASCADE;
+drop table notes CASCADE;
 
 CREATE TABLE user_account
 ( id            SERIAL PRIMARY KEY NOT NULL
@@ -24,7 +26,8 @@ CREATE TABLE assignments
 , user_id       INT                 NOT NULL REFERENCES user_account(id)
 , title         VARCHAR(60)         NOT NULL
 , description   VARCHAR(1000)       NOT NULL
-, due_date      DATE                NOT NULL);
+, due_date      DATE                NOT NULL
+, finished      BOOLEAN             NOT NULL);
 
 CREATE TABLE notes
 ( id            SERIAL PRIMARY KEY  NOT NULL
@@ -56,6 +59,7 @@ INSERT INTO class
 , class_name
 , short_desc
 , DESCRIPTION
+, NOTE
 )
 VALUES
 ( 1
@@ -71,6 +75,8 @@ At the end of this semester successful students will be able to:
 4. Recognize the fundamentals behind and understand the advantages and disadvantages of the many different and competing web technologies.
 5. Independently learn and apply new technologies.
 '
+, 
+'THIS IS A CLASS NOTE THAT I WROTE FOR TESTING PURPOSES'
 );
 
 INSERT INTO class
@@ -99,18 +105,6 @@ VALUES
 , 'android...'
 );
 
-INSERT INTO assignments
-( class_id
-, user_id
-, title
-, description
-, due_date
-) VALUES
-( 1
-, 1
-, 'Project 2'
-, 'Create a web application using node.js'
-, '2019-12-1');
 
 INSERT INTO assignments
 ( class_id
@@ -118,12 +112,44 @@ INSERT INTO assignments
 , title
 , description
 , due_date
+, finished
+) VALUES
+( 1
+, 1
+, 'Project 1'
+, 'Create a web application using PHP'
+, '2019-12-1'
+, FALSE);
+
+INSERT INTO assignments
+( class_id
+, user_id
+, title
+, description
+, due_date
+, finished
+) VALUES
+( 1
+, 1
+, 'Project 2'
+, 'Create a web application using node.js'
+, '2019-12-1'
+, false);
+
+INSERT INTO assignments
+( class_id
+, user_id
+, title
+, description
+, due_date
+, finished
 ) VALUES
 ( 2
 , 1
 , 'Team Proposal'
 , 'Create a proposal of a technical problem that needs fixing.....'
-, '2019-12-8');
+, '2019-12-8'
+, false);
 
 INSERT INTO notes
 ( class_id

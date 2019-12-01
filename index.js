@@ -18,7 +18,6 @@ express()
   .set('view engine', 'ejs')
   .get('/', function (req, res) {
     //Check for login here and then send the correct page  
-    console.log(req);
     res.render('pages/main')
   })
   .get('/getClasses', function (req, res) {
@@ -34,7 +33,7 @@ express()
         console.log("Error in query: ");
       }
 
-      console.log(result.rows);
+      
 
       res.json(result.rows);
 
@@ -42,16 +41,33 @@ express()
     })
 
   })
+  .get('/getAssignments', (req, res) => {
+    var user_id  = 1;
+    var class_id = req.query.class_id;
+    var sql = "SELECT id, title, description, due_date, finished FROM assignments ";
+    sql    += "WHERE user_id = " + user_id + " AND class_id = " + class_id;
+    sql    += "ORDER BY id";
+
+    pool.query (sql, (err, result) => {
+      if (err) {
+        console.log("Error in assignment query");
+      }
+
+      
+      res.json(result.rows);
+    })
+    
+  })
   .get('/login', (req, res) => res.render('pages/login'))
   .get('/getLoginForm', function (req, res) {
-    console.log("in get loginform");
+    
     res.render('pages/loginForm');
   })
   .get('/getSignUpForm', (req, res) => res.render('pages/loginForm'))
   .post('/checkUserInfo', function (req, res) {
     
     //TODO check the database for user with these natural keys
-    console.log(req.body);
+    
     let email = req.body.email;
     let password = req.body.password;
 
@@ -59,6 +75,42 @@ express()
     // if we are valid send them here!
     res.render('pages/main');
   })
+  .post('/checkAssign', (req, res) => {
+      //get user id first or checked if we are logged in
+      let user_id = 1;
+      let assignmentId = req.body.assignmentId;
+
+      var sql = "UPDATE assignments SET finished = true WHERE user_id = " + user_id  + " AND id = " + assignmentId;
+
+      pool.query (sql, (err, result) => {
+        if(err) {
+          console.log("error updating info");
+        }
+        else {
+          console.log("Successfully updated.")
+        }
+      })
+
+      
+  })
+  .post('/unCheckAssign', (req, res) => {
+    //get user id first or checked if we are logged in
+    let user_id = 1;
+    let assignmentId = req.body.assignmentId;
+
+    var sql = "UPDATE assignments SET finished = false WHERE user_id = " + user_id  + " AND id = " + assignmentId;
+
+    pool.query (sql, (err, result) => {
+      if(err) {
+        console.log("error updating info");
+      }
+      else {
+        console.log("Successfully updated.")
+      }
+    })
+
+    
+})
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 
