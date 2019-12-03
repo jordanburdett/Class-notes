@@ -109,12 +109,6 @@
             $('#classDisplay').append(
                 "<div class='class-flex' id='classCard" + _class.id + "'><h5 class='class-title' id='classCardTitle" + _class.id + "'>" + _class.class_name + "</h5><p class='class-content' id='classCardContent" + _class.id + "'>" + _class.short_desc + "</p><button class='class-button' onclick='expandCard(" + _class.id + ")' id='expandCardButton" + _class.id + "'>Expand Class</button></div></div>");
 
-            if (_class.note) {
-                console.log("THERE IS A NOTE!");
-            }
-            else {
-                console.log("THERE IS NO NOTE");
-            }
             classNoteLookup[_class.id] = _class.note;
             longDescriptionLookup[_class.id] = _class.description;
             shortDescriptionLookup[_class.id] = _class.short_desc;
@@ -178,7 +172,7 @@
 
 
                 let newAssign = "<div class='flex-assignments-container' id='assignmentHolder'>";
-                console.log(newAssign);
+               
 
                 assignments.forEach(value => {
                     newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
@@ -198,7 +192,7 @@
 
                     newAssign += "</div>";
                 })
-                console.log(assignments);
+               
                 newAssign += "</div>";
                 newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
 
@@ -302,19 +296,57 @@
                             expandCard(classId);
                             expandCard(classId);
                         })
+
+                    $.ajax(
+                        {
+                            url: '/saveNote',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                classId: classId,
+                                content: content,
+                            },
+                            success: (data) => {
+                                console.log("saveNote post finished");
+                                expandCard(classId);
+                                expandCard(classId);
+                            }
+                        }
+                    )
                 }
                 else {
 
                     // query info for the class
-                    $.post('/saveNote', {
-                        classId: classId,
-                        content: content
-                    },
-                        (res, status) => {
-                            console.log("saveNote post finished with " + status);
-                            expandCard(classId);
-                            expandCard(classId);
-                        })
+
+
+
+                    $.ajax(
+                        {
+                            url: '/saveNote',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                classId: classId,
+                                content: content,
+                            },
+                            success: async function (data) {
+                                console.log("saveNote post finished");
+                                console.log(data);
+
+                                if (data) {
+                                    // reload the note
+
+                                    const response = await fetch('/getClasses?classId=' + classId);
+                                    const classNote = await response.json();
+                                    console.log(classNote);
+                                    console.log(classNote[0].note);
+
+                                    classNoteLookup[classId] = classNote[0].note;
+                                    expandCard(classId);
+                                    expandCard(classId);
+                                }
+                            }
+                        });
                 }
 
 

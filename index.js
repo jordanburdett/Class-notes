@@ -26,7 +26,15 @@ express()
 
     //connect to database with session data about the current user query with where user_id = 'user_id'
     var id = 1;
-    var sql = "SELECT * FROM class WHERE user_id = " + id + "Order by class_name";
+    console.log(req.query.classId);
+    if (req.query.classId) {
+      console.log("this is in the query one......");
+      var sql = "SELECT note FROM class WHERE user_id = " + id + " AND id = " + req.query.classId + "Order by class_name";
+    }
+    else {
+      console.log("not the query one");
+      var sql = "SELECT * FROM class WHERE user_id = " + id + "Order by class_name";
+    }
 
     pool.query(sql, function (err, result) {
       if (err) {
