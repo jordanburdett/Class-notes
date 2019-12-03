@@ -238,7 +238,7 @@
                 document.getElementById('assignmentHolder').remove();
 
                 document.getElementById('classCardTitle' + cardId).className = "class-title";
-                
+
                 document.getElementById('classCardContent' + cardId).className = "class-content";
                 document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
                 document.getElementById('expandCardButton' + cardId).className = 'class-button';
@@ -299,6 +299,8 @@
                     },
                         (res, status) => {
                             console.log("saveNote post finished with " + status);
+                            expandCard(classId);
+                            expandCard(classId);
                         })
                 }
                 else {
@@ -310,13 +312,14 @@
                     },
                         (res, status) => {
                             console.log("saveNote post finished with " + status);
+                            expandCard(classId);
+                            expandCard(classId);
                         })
                 }
 
 
 
-                expandCard(classId);
-                expandCard(classId);
+
             }
             else {
                 console.log("Attempting to save an empty note....");
