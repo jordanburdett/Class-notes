@@ -113,12 +113,17 @@ express()
         if (err) {
           console.log("error updating info");
           console.log(err);
+          res.json('false');
         }
         else {
           console.log("Successfully updated.")
+          res.json('true');
         }
+
+        
       })
 
+    
     }
 
   })
