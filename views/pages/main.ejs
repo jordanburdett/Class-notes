@@ -76,7 +76,7 @@
     <% include ../partials/footer.ejs %>
     <script>
 
-
+        var quill = undefined;
 
         //On page load run this function
         window.onload = function () {
@@ -108,10 +108,10 @@
         function displayClass(_class) {
             $('#classDisplay').append(
                 "<div class='class-flex' id='classCard" + _class.id + "'><h5 class='class-title' id='classCardTitle" + _class.id + "'>" + _class.class_name + "</h5><p class='class-content' id='classCardContent" + _class.id + "'>" + _class.short_desc + "</p><button class='class-button' onclick='expandCard(" + _class.id + ")' id='expandCardButton" + _class.id + "'>Expand Class</button></div></div>");
-            
+
             if (_class.note) {
                 console.log("THERE IS A NOTE!");
-            }    
+            }
             else {
                 console.log("THERE IS NO NOTE");
             }
@@ -155,7 +155,8 @@
 
         }
 
-        async function expandCard(cardId) {
+        async function expandCard(cardId, reload) {
+
 
 
             $('#classCard' + cardId).toggleClass('cardExpanded')
@@ -199,18 +200,19 @@
                 })
                 console.log(assignments);
                 newAssign += "</div>";
+                newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
 
                 document.getElementById('classCard' + cardId).innerHTML += newAssign;
-                
+
                 if (classNoteLookup[cardId]) {
-                    document.getElementById('classCard' + cardId).innerHTML += "<h2 style='padding-left:1%;'> Note: </h1>";
-                    document.getElementById('classCard' + cardId).innerHTML += "<div class='class-note'>" + classNoteLookup[cardId] + "</div>";
-                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='openNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Edit Note</button>"; 
+                    document.getElementById('noteContainer' + cardId).innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
+                    document.getElementById('noteContainer' + cardId).innerHTML += "<div id='classNoteContent" + cardId + "' class='class-note'>" + classNoteLookup[cardId] + "</div>";
+                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='editNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Edit Note</button>";
                 }
                 else {
-                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='openNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Make Note</button>"; 
+                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='createNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Make Note</button>";
                 }
-                
+
                 document.getElementById('classCard' + cardId).innerHTML += buttonLookup[cardId];
                 document.getElementById('expandCardButton' + cardId).className = 'button-expand';
                 document.getElementById('expandCardButton' + cardId).innerText = 'Shrink Class';
@@ -218,12 +220,16 @@
 
             }
             else {
-                document.getElementById('classCardTitle' + cardId).className = "class-title";
                 document.getElementById('classCardContent' + cardId).innerText = shortDescriptionLookup[cardId];
-                document.getElementById('classCardContent' + cardId).className = "class-content";
-                document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
-                document.getElementById('expandCardButton' + cardId).className = 'class-button';
+
+                if (classNoteLookup[cardId]) {
+                    document.getElementById('classNoteHeader' + cardId).remove();
+                    document.getElementById('classNoteContent' + cardId).remove();
+                }
+
                 document.getElementById('makeNoteButton' + cardId).remove();
+                document.getElementById('noteContainer' + cardId).remove();
+
 
                 assignments.forEach(value => {
                     document.getElementById('assignment' + value.id).remove();
@@ -231,7 +237,89 @@
 
                 document.getElementById('assignmentHolder').remove();
 
+                document.getElementById('classCardTitle' + cardId).className = "class-title";
+                
+                document.getElementById('classCardContent' + cardId).className = "class-content";
+                document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
+                document.getElementById('expandCardButton' + cardId).className = 'class-button';
 
+
+
+            }
+
+        }
+
+        function createNote(cardId) {
+            let card = document.getElementById('noteContainer' + cardId);
+            card.innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
+            openAdvancedEditor("noteContainer" + cardId, '', cardId)
+        }
+
+        /************
+        * openAdvancedEditor
+        * this will open the enhanced text editor by quill
+        */
+        function openAdvancedEditor(id, placeholder, cardId) {
+            let container = document.getElementById(id);
+            container.innerHTML = "<div style='width:100%;'><div id='editor'>" + placeholder + "</div></div>";
+
+            quill = new Quill('#editor', {
+                theme: 'snow'
+            });
+
+            // change the save button here
+            document.getElementById('makeNoteButton' + cardId).innerText = "Save Note";
+
+            document.getElementById('makeNoteButton' + cardId).setAttribute("onClick", "saveNote( 'editor', " + cardId + ")");
+        }
+
+        function editNote(classId) {
+            openAdvancedEditor('classNoteContent' + classId, document.getElementById('classNoteContent' + classId).innerHTML, classId);
+        }
+
+
+        function saveNote(id, classId, assignmentId) {
+            let innerText = document.getElementById(id).innerText;
+
+            if (innerText.length > 0) {
+                let content = document.getElementById(id).innerHTML;
+                let array = content.split('contenteditable="true">', 2);
+                content = array[1];
+                array = content.split('</div>', 2);
+                content = array[0];
+
+
+
+                if (assignmentId) {
+                    // query info for an assignment
+                    $.post('/saveNote', {
+                        classId: classId,
+                        content: content,
+                        assignmentId: assignmentId
+                    },
+                        (res, status) => {
+                            console.log("saveNote post finished with " + status);
+                        })
+                }
+                else {
+
+                    // query info for the class
+                    $.post('/saveNote', {
+                        classId: classId,
+                        content: content
+                    },
+                        (res, status) => {
+                            console.log("saveNote post finished with " + status);
+                        })
+                }
+
+
+
+                expandCard(classId);
+                expandCard(classId);
+            }
+            else {
+                console.log("Attempting to save an empty note....");
             }
 
         }

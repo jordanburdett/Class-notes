@@ -17,7 +17,7 @@ CREATE TABLE class
 , class_name    varchar(40) UNIQUE      NOT NULL
 , short_desc    varchar(150)            NOT NULL
 , description   varchar(1000)           NOT NULL
-, note          varchar(10000)
+, note          text
 );
 
 CREATE TABLE assignments
@@ -35,7 +35,7 @@ CREATE TABLE notes
 , user_id       INT                 NOT NULL REFERENCES user_account(id)
 , assign_id     INT                 NOT NULL REFERENCES assignments(id)
 , note_title    VARCHAR(60)         NOT NULL
-, note_content  VARCHAR(10000)      NOT NULL
+, note_content  text                NOT NULL
 , date_modified DATE                NOT NULL
 );
 
@@ -169,3 +169,5 @@ INSERT INTO notes
 /* query tests */
 select user_id, class_name, short_desc from class
 where user_id = 1;
+
+
