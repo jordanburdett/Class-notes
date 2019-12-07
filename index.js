@@ -15,11 +15,11 @@ const bcrypt = require('bcrypt');
 
 
 function authenticateToken(req, res, next) {
-  
+
   const token = req.headers['accesstoken'];
-  
+
   const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-  if(user == null) {
+  if (user == null) {
     res.status(403);
   }
 
@@ -34,7 +34,7 @@ express()
   .set('views', path.join(__dirname, 'views'))
   .set('view engine', 'ejs')
   .get('/', function (req, res) {
-     
+
     res.render('pages/main')
   })
   .get('/getClasses', authenticateToken, function (req, res) {
@@ -43,13 +43,13 @@ express()
     ///////////////////////////////////////////////?TODO!!!!!TODO!!!!TODO!!!!!TODO!!!!!!!!
     // go through and add your middle ware to everything... go through clientside and ensure the header is passed with each call
     ////////////////////////////////?TODO////////////////////////////////////////////////////////////////////////////////////////
-    
+
     console.log(req.headers['accesstoken']);
 
     //connect to database with session data about the current user query with where user_id = 'user_id'
     console.log("THE ID for the user is " + req.user.id);
     var id = req.user.id;
-    
+
 
     if (req.query.classId) {
       var sql = "SELECT note FROM class WHERE user_id = " + id + " AND id = " + req.query.classId + "Order by class_name";
@@ -71,8 +71,8 @@ express()
     })
 
   })
-  .get('/getAssignments', (req, res) => {
-    var user_id = 1;
+  .get('/getAssignments', authenticateToken, (req, res) => {
+    var user_id = req.user.id;
     var class_id = req.query.class_id;
     var sql = "SELECT id, title, description, due_date, finished FROM assignments ";
     sql += "WHERE user_id = " + user_id + " AND class_id = " + class_id;
@@ -103,9 +103,28 @@ express()
 
         res.status(401);
       }
+      console.log(result);
+      console.log("row count is " + result['rowCount']);
+      if (result['rowCount'] == 0) {
+        console.log("IN COMPARE");
+        res.json({
+          error: true,
+          msg: 'Username not found... create a account',
+          code: 1
+        })
+        return;
+      }
 
       bcrypt.compare(password, result.rows[0].password, (err, isSame) => {
-        if (err) console.log("error comparing");
+        if (err) {
+          res.json({
+            error: true,
+            msg: err,
+            code: 10
+          });
+
+          return;
+        }
 
         // Its the same so send them the authorization token that contains everything.
         if (isSame) {
@@ -119,8 +138,18 @@ express()
           };
 
           const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-          res.json({accessToken: accessToken});
+          res.json({
+            error: false,
+            accessToken: accessToken
+          });
 
+        } else {
+          res.json({
+            error: true,
+            msg: 'Incorrect Password',
+            code: 2
+          });
+          return
         }
       });
       console.log(result.rows[0].password);
@@ -130,9 +159,9 @@ express()
 
   })
 
-  .post('/checkAssign', (req, res) => {
+  .post('/checkAssign',authenticateToken, (req, res) => {
     //get user id first or checked if we are logged in
-    let user_id = 1;
+    let user_id = req.user.id;
     let assignmentId = req.body.assignmentId;
 
     var sql = "UPDATE assignments SET finished = true WHERE user_id = " + user_id + " AND id = " + assignmentId;
@@ -148,12 +177,13 @@ express()
 
 
   })
-  .post('/addNewClass', (req, res) => {
+  .post('/addNewClass', authenticateToken, (req, res) => {
 
-    let user_id = 1;
+    let user_id = req.user.id;
     let title = req.body.title;
     let shortDesc = req.body.shortDesc;
     let description = req.body.description;
+    console.log(user_id + " AUTHENITCATE TOKEN ADDING CLASS");
 
     var sql = "INSERT INTO class (user_id, class_name, short_desc, description)";
     sql += "VALUES (" + user_id + ",'" + title + "','" + shortDesc + "','" + description + "')";
@@ -172,9 +202,9 @@ express()
 
     })
   })
-  .post('/saveNote', (req, res) => {
+  .post('/saveNote', authenticateToken, (req, res) => {
     //check if logged in and get user id   TODO
-    let user_id = 1;
+    let user_id = req.user.id;
     let assignmentId = req.body.assignmentId;
     let class_id = req.body.classId;
     let content = req.body.content;
@@ -206,9 +236,9 @@ express()
     }
 
   })
-  .post('/unCheckAssign', (req, res) => {
+  .post('/unCheckAssign', authenticateToken, (req, res) => {
     //get user id first or checked if we are logged in
-    let user_id = 1;
+    let user_id = req.user.id;
     let assignmentId = req.body.assignmentId;
 
     var sql = "UPDATE assignments SET finished = false WHERE user_id = " + user_id + " AND id = " + assignmentId;
@@ -232,5 +262,5 @@ express()
 
 
 
-  
+
 

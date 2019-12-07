@@ -81,7 +81,7 @@
 
         //On page load run this function
         window.onload = function () {
-            if (false) {
+            if (sessionStorage.getItem("accessToken")) {
                 loadClasses();
             }
             else {
@@ -168,91 +168,110 @@
             $('#classCard' + cardId).toggleClass('cardExpanded')
 
             // make ajax request to get assignments and class description and class note
-            const response = await fetch('/getAssignments?class_id=' + cardId);
-            const assignments = await response.json();
+            //const response = await fetch('/getAssignments?class_id=' + cardId);
+            //const assignments = await response.json();
+
+            $.ajax({
+                type: "GET",
+                url: "/getAssignments?class_id=" + cardId,
+                headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                success: function (assignments) {
+                    //set your variable to the result 
+                    console.log(assignments);
+                    console.log("JORDAN LOOK HERE");
+
+                    if (document.getElementById('classCardTitle' + cardId).className == "class-title") {
+                        document.getElementById('classCardTitle' + cardId).className = "class-title-expanded";
+                        document.getElementById('classCardContent' + cardId).innerText = longDescriptionLookup[cardId];
+                        document.getElementById('classCardContent' + cardId).className = "class-content-expanded";
+                        buttonLookup[cardId] = document.getElementById('expandCardButton' + cardId).outerHTML;
+                        document.getElementById('expandCardButton' + cardId).remove();
 
 
+                        let newAssign = "<div class='flex-assignments-container' id='assignmentHolder'>";
 
 
+                        assignments.forEach(value => {
+                            newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
+                            newAssign += "<div class='flex-assignments-title' id='assignmentTitle" + value.id + "'>";
+                            newAssign += value.title;
 
-            if (document.getElementById('classCardTitle' + cardId).className == "class-title") {
-                document.getElementById('classCardTitle' + cardId).className = "class-title-expanded";
-                document.getElementById('classCardContent' + cardId).innerText = longDescriptionLookup[cardId];
-                document.getElementById('classCardContent' + cardId).className = "class-content-expanded";
-                buttonLookup[cardId] = document.getElementById('expandCardButton' + cardId).outerHTML;
-                document.getElementById('expandCardButton' + cardId).remove();
+                            if (value.finished) {
+                                newAssign += "<i class='fas fa-check-square checked' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
+                            }
+                            else {
+                                newAssign += "<i class='fas fa-check-square check-icon' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
+                            }
+                            newAssign += "</div>";
+
+                            newAssign += "<div class='flex-assignments-desc' id'assignmentDesc" + value.id + "'>" + value.description + "</div>";
 
 
-                let newAssign = "<div class='flex-assignments-container' id='assignmentHolder'>";
+                            newAssign += "</div>";
+                        })
+
+                        newAssign += "</div>";
+                        newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
+
+                        document.getElementById('classCard' + cardId).innerHTML += newAssign;
+
+                        if (classNoteLookup[cardId]) {
+                            document.getElementById('noteContainer' + cardId).innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
+                            document.getElementById('noteContainer' + cardId).innerHTML += "<div id='classNoteContent" + cardId + "' class='class-note'>" + classNoteLookup[cardId] + "</div>";
+                            document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='editNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Edit Note</button>";
+                        }
+                        else {
+                            document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='createNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Make Note</button>";
+                        }
+
+                        document.getElementById('classCard' + cardId).innerHTML += buttonLookup[cardId];
+                        document.getElementById('expandCardButton' + cardId).className = 'button-expand';
+                        document.getElementById('expandCardButton' + cardId).innerText = 'Shrink Class';
 
 
-                assignments.forEach(value => {
-                    newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
-                    newAssign += "<div class='flex-assignments-title' id='assignmentTitle" + value.id + "'>";
-                    newAssign += value.title;
-
-                    if (value.finished) {
-                        newAssign += "<i class='fas fa-check-square checked' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
                     }
                     else {
-                        newAssign += "<i class='fas fa-check-square check-icon' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
+                        document.getElementById('classCardContent' + cardId).innerText = shortDescriptionLookup[cardId];
+
+                        if (classNoteLookup[cardId]) {
+
+                            document.getElementById('classNoteHeader' + cardId).remove();
+                            document.getElementById('classNoteContent' + cardId).remove();
+                        }
+
+                        document.getElementById('makeNoteButton' + cardId).remove();
+                        document.getElementById('noteContainer' + cardId).remove();
+
+
+                        assignments.forEach(value => {
+                            document.getElementById('assignment' + value.id).remove();
+                        })
+
+                        document.getElementById('assignmentHolder').remove();
+
+                        document.getElementById('classCardTitle' + cardId).className = "class-title";
+
+                        document.getElementById('classCardContent' + cardId).className = "class-content";
+                        document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
+                        document.getElementById('expandCardButton' + cardId).className = 'class-button';
+
+
+
                     }
-                    newAssign += "</div>";
-
-                    newAssign += "<div class='flex-assignments-desc' id'assignmentDesc" + value.id + "'>" + value.description + "</div>";
 
 
-                    newAssign += "</div>";
-                })
 
-                newAssign += "</div>";
-                newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
 
-                document.getElementById('classCard' + cardId).innerHTML += newAssign;
 
-                if (classNoteLookup[cardId]) {
-                    document.getElementById('noteContainer' + cardId).innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
-                    document.getElementById('noteContainer' + cardId).innerHTML += "<div id='classNoteContent" + cardId + "' class='class-note'>" + classNoteLookup[cardId] + "</div>";
-                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='editNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Edit Note</button>";
+                },
+                error: function (error) {
+                    //handle the error 
                 }
-                else {
-                    document.getElementById('classCard' + cardId).innerHTML += "<button class='button-expand' onclick='createNote(" + cardId + ")' id='makeNoteButton" + cardId + "'>Make Note</button>";
-                }
-
-                document.getElementById('classCard' + cardId).innerHTML += buttonLookup[cardId];
-                document.getElementById('expandCardButton' + cardId).className = 'button-expand';
-                document.getElementById('expandCardButton' + cardId).innerText = 'Shrink Class';
-
-
-            }
-            else {
-                document.getElementById('classCardContent' + cardId).innerText = shortDescriptionLookup[cardId];
-
-                if (classNoteLookup[cardId]) {
-
-                    document.getElementById('classNoteHeader' + cardId).remove();
-                    document.getElementById('classNoteContent' + cardId).remove();
-                }
-
-                document.getElementById('makeNoteButton' + cardId).remove();
-                document.getElementById('noteContainer' + cardId).remove();
-
-
-                assignments.forEach(value => {
-                    document.getElementById('assignment' + value.id).remove();
-                })
-
-                document.getElementById('assignmentHolder').remove();
-
-                document.getElementById('classCardTitle' + cardId).className = "class-title";
-
-                document.getElementById('classCardContent' + cardId).className = "class-content";
-                document.getElementById('expandCardButton' + cardId).innerText = 'Expand Class';
-                document.getElementById('expandCardButton' + cardId).className = 'class-button';
+            });
 
 
 
-            }
+
 
         }
 
@@ -300,25 +319,17 @@
 
                 if (assignmentId) {
                     // query info for an assignment
-                    $.post('/saveNote', {
-                        classId: classId,
-                        content: content,
-                        assignmentId: assignmentId
-                    },
-                        (res, status) => {
-                            console.log("saveNote post finished with " + status);
-                            expandCard(classId);
-                            expandCard(classId);
-                        })
 
                     $.ajax(
                         {
                             url: '/saveNote',
                             type: 'POST',
                             dataType: 'json',
+                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
                             data: {
                                 classId: classId,
                                 content: content,
+                                assignmentId: assignmentI
                             },
                             success: (data) => {
                                 console.log("saveNote post finished");
@@ -339,6 +350,7 @@
                             url: '/saveNote',
                             type: 'POST',
                             dataType: 'json',
+                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
                             data: {
                                 classId: classId,
                                 content: content,
@@ -350,14 +362,16 @@
                                 if (data) {
                                     // reload the note
 
+                                    /*
                                     const response = await fetch('/getClasses?classId=' + classId);
                                     const classNote = await response.json();
                                     console.log(classNote);
                                     console.log(classNote[0].note);
+                                    */
 
-                                    classNoteLookup[classId] = classNote[0].note;
-                                    expandCard(classId);
-                                    expandCard(classId);
+                                    document.getElementById('classDisplay').innerHTML = "";
+                                    loadClasses();
+                                    
                                 }
                             }
                         });
@@ -374,27 +388,50 @@
         }
 
         function checkAssign(assignmentId) {
-            console.log("in check Assign with " + assignmentId);
+            
 
             if (document.getElementById('assignIcon' + assignmentId).className == "fas fa-check-square check-icon") {
                 document.getElementById('assignIcon' + assignmentId).className = "fas fa-check-square checked";
                 //update information regarding done assignment
 
-                $.post('/checkAssign', {
-                    assignmentId: assignmentId
-                }, (data, status) => {
-                    console.log(status);
-                })
+                console.log("in check assignment " + assignmentId);
+
+                $.ajax(
+                        {
+                            url: '/checkAssign',
+                            type: 'POST',
+                            dataType: 'json',
+                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                            data: {
+                                assignmentId: assignmentId
+                            },
+                            success: async function (data) {
+                                console.log("assignmentChecked");
+                                console.log(data);
+
+                            }
+                        });
 
             }
             else {
                 document.getElementById('assignIcon' + assignmentId).className = "fas fa-check-square check-icon"
                 //update database that the assignment is not done.
-                $.post('/unCheckAssign', {
-                    assignmentId: assignmentId
-                }, (data, status) => {
-                    console.log(status);
-                })
+                console.log("remove check");
+                $.ajax(
+                        {
+                            url: '/unCheckAssign',
+                            type: 'POST',
+                            dataType: 'json',
+                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                            data: {
+                                assignmentId: assignmentId
+                            },
+                            success: async function (data) {
+                                console.log("assignmentUnChecked");
+                                console.log(data);
+                            }
+                        });
+
             }
         }
 
@@ -431,6 +468,7 @@
                     url: '/addNewClass',
                     type: 'POST',
                     dataType: 'json',
+                    headers: { 'accessToken': sessionStorage.getItem("accessToken") },
                     data: {
                         title: title,
                         shortDesc: shortDesc,
@@ -486,16 +524,29 @@
                         username: username,
                         password: password
                     },
-                    success: async function (token) {
+                    success: async function (data) {
+                        console.log(data);
 
-
-                        if (token) {
+                        if (data['error'] == false) {
                             console.log("We are logged in!");
-                            console.log(token.accessToken);
-                            sessionStorage.setItem("accessToken", token.accessToken);
-                            
+                            console.log(data.accessToken);
+                            sessionStorage.setItem("accessToken", data.accessToken);
+
                             // start up the application! and remove login screen
+
                             loadClasses();
+
+                            removeElement('loginCard');
+                        }
+                        else {
+                            switch (data['error']) {
+                                case 1: //invalid username
+                                    break;
+                                case 2: //invalid password
+                                    break;
+                                default: //unknown error....
+                                    break;
+                            }
                         }
                     }
                 });
