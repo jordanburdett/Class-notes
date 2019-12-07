@@ -50,7 +50,7 @@ INSERT INTO user_account
 VALUES
 ( 'Jordan'
 , 'Burdett'
-, 'jordan@burdett.us'
+, 'jordan'
 , 'password');
 
 

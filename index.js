@@ -72,7 +72,16 @@ express()
     console.log(username);
     console.log(password);
 
+    var sql = "SELECT * FROM user_account WHERE username = " + username;
 
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.log("Error in assignment query");
+      }
+
+      console.log(result);
+    })
+    
     //USE BCRYPT TO COMPARE PASSWORDS AND SUCH --- SEE TEAM ACTIVITY FOR EXAMPLE
   })
   
@@ -158,7 +167,7 @@ express()
     let assignmentId = req.body.assignmentId;
 
     var sql = "UPDATE assignments SET finished = false WHERE user_id = " + user_id + " AND id = " + assignmentId;
-
+    
     pool.query(sql, (err, result) => {
       if (err) {
         console.log("error updating info");
@@ -169,7 +178,7 @@ express()
     })
 
 
+
   })
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
-
 
