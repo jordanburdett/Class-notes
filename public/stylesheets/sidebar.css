@@ -9,6 +9,8 @@ body {
     background-color:var(--background-color);
 }
 
+
+
 .flex-container {
     position:absolute;
     display: flex;
@@ -33,6 +35,34 @@ body {
     padding-left: 10%;
     padding-top: 10%;
     padding-bottom: 5%;
+}
+
+.add-title {
+    text-align: center;
+    width: 80%;
+    align-self:center;
+    font-size: 30px;
+    background-color: var(--background-accent);
+    color: whitesmoke;
+    margin-left:10%;
+    margin-bottom: 5%;
+    border:none;
+}
+
+.create-card-container {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    flex-wrap:wrap;
+    transition: all 0.5s;
+    right: 10%;
+    left: 10%;
+    top: 15%;
+    border-radius: 25px;
+    
+    color:whitesmoke;
+    background-color: var(--navbar-color);
 }
 
 .class-title-expanded {
@@ -87,7 +117,7 @@ body {
 }
 
 .button-expand {
-    margin-bottom: 10%;
+    margin-bottom: 5%;
     margin-right: 10%;
     margin-left: 5%;
     margin-top: 5%;

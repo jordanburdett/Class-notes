@@ -66,23 +66,16 @@ express()
     })
 
   })
-  .get('/login', (req, res) => res.render('pages/login'))
-  .get('/getLoginForm', function (req, res) {
-
-    res.render('pages/loginForm');
-  })
-  .get('/getSignUpForm', (req, res) => res.render('pages/loginForm'))
-  .post('/checkUserInfo', function (req, res) {
-
-    //TODO check the database for user with these natural keys
-
-    let email = req.body.email;
+  .post('/login', (req, res) => {
+    let username = req.body.username;
     let password = req.body.password;
+    console.log(username);
+    console.log(password);
 
 
-    // if we are valid send them here!
-    res.render('pages/main');
+    //USE BCRYPT TO COMPARE PASSWORDS AND SUCH --- SEE TEAM ACTIVITY FOR EXAMPLE
   })
+  
   .post('/checkAssign', (req, res) => {
     //get user id first or checked if we are logged in
     let user_id = 1;
@@ -100,6 +93,30 @@ express()
     })
 
 
+  })
+  .post('/addNewClass', (req, res) => {
+
+    let user_id = 1;
+    let title = req.body.title;
+    let shortDesc = req.body.shortDesc;
+    let description = req.body.description;
+
+    var sql = "INSERT INTO class (user_id, class_name, short_desc, description)";
+    sql += "VALUES (" + user_id + ",'" + title + "','" + shortDesc + "','" + description + "')";
+      
+      pool.query(sql, (err, result) => {
+        if (err) {
+          console.log("error updating info");
+          console.log(err);
+          res.json('false');
+        }
+        else {
+          console.log("Successfully updated.")
+          res.json('true');
+        }
+
+        
+      })
   })
   .post('/saveNote', (req, res) => {
     //check if logged in and get user id   TODO

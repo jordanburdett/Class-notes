@@ -26,7 +26,7 @@
                     </li>
 
                     <li>
-                        <a href="#">Add Classes</a>
+                        <a href="javascript:addClass();">Add Classes</a>
                     </li>
                     <li>
                         <a href="#">Account Settings</a>
@@ -80,11 +80,11 @@
 
         //On page load run this function
         window.onload = function () {
-            if (amILoggedIn()) {
+            if (false) {
                 loadClasses();
             }
             else {
-                window.location = "/login";
+                showLogin();
             }
         }
 
@@ -172,7 +172,7 @@
 
 
                 let newAssign = "<div class='flex-assignments-container' id='assignmentHolder'>";
-               
+
 
                 assignments.forEach(value => {
                     newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
@@ -192,7 +192,7 @@
 
                     newAssign += "</div>";
                 })
-               
+
                 newAssign += "</div>";
                 newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
 
@@ -217,6 +217,7 @@
                 document.getElementById('classCardContent' + cardId).innerText = shortDescriptionLookup[cardId];
 
                 if (classNoteLookup[cardId]) {
+
                     document.getElementById('classNoteHeader' + cardId).remove();
                     document.getElementById('classNoteContent' + cardId).remove();
                 }
@@ -245,8 +246,9 @@
 
         function createNote(cardId) {
             let card = document.getElementById('noteContainer' + cardId);
-            card.innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
-            openAdvancedEditor("noteContainer" + cardId, '', cardId)
+            document.getElementById('noteContainer' + cardId).innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
+            document.getElementById('noteContainer' + cardId).innerHTML += "<div id='classNoteContent" + cardId + "' class='class-note'></div>";
+            openAdvancedEditor("classNoteContent" + cardId, '', cardId)
         }
 
         /************
@@ -383,6 +385,111 @@
                 })
             }
         }
+
+        function addClass() {
+            console.log("In add Class");
+
+            toggleSideBar();
+
+            let classCode = "<div class='create-card-container' id='newCardCreation'>";
+            classCode += "<div class='class-title-expanded'>Add Class</div>";
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Title:</div>";
+            classCode += "<input type='text' class='add-title' id='addTitle'></input>";
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Short Desc:</div>";
+            classCode += "<input type='text' class='add-title' id='addShortDesc'></input>";
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Full Desc:</div>";
+            classCode += "<input type='text' class='add-title' id='addFullDesc'></input>";
+            classCode += "<button class='button-expand' onclick='saveNewClass()' id='saveClass'>Save Class</button>"
+            classCode += "<button class='button-expand' style='background-color:red;' onclick='removeElement(\"newCardCreation\")'>Cancel</button>";
+            classCode += "</div>";
+
+            $('#classDisplay').append(classCode);
+
+        }
+
+        function saveNewClass() {
+            console.log("in save new class");
+            let title = document.getElementById('addTitle').value;
+            let shortDesc = document.getElementById('addShortDesc').value;
+            let description = document.getElementById('addFullDesc').value;
+
+
+            $.ajax(
+                {
+                    url: '/addNewClass',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        title: title,
+                        shortDesc: shortDesc,
+                        description: description
+                    },
+                    success: async function (data) {
+                        console.log(data);
+
+                        if (data) {
+                            removeElement('newCardCreation');
+                            document.getElementById('classDisplay').innerHTML = "";
+                            loadClasses();
+
+                        }
+                        else {
+                            console.log(data.error);
+                        }
+                    }
+                });
+        }
+
+        function removeElement(id) {
+            console.log("removing " + id);
+            document.getElementById(id).remove();
+        }
+
+        function showLogin() {
+            let classCode = "<div class='create-card-container' id='loginCard'>";
+            classCode += "<div class='class-title-expanded'>Login</div>";
+
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Username</div>";
+            classCode += "<input type='text' class='add-title' id='username' name='username'></input>";
+
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Password</div>";
+            classCode += "<input type='password' class='add-title' id='password' name='password'></input>";
+
+            classCode += "<button class='button-expand' onclick='login()' id='loginButton'>Login</button>"
+            classCode += "</div>";
+
+            $('#classDisplay').append(classCode);
+        }
+
+        async function login() {
+            let password = document.getElementById('password').value;
+            let username = document.getElementById('username').value;
+
+            $.ajax(
+                {
+                    url: '/login',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        username: username,
+                        password: password
+                    },
+                    success: async function (loggedIn) {
+                        console.log(loggedIn);
+
+                        if (loggedIn) {
+                            console.log("We are logged in!");
+
+                            // start up the application!
+                            loadClasses();
+                        }
+                    }
+                });
+        }
+
+
+
+
     </script>
 </body>
 

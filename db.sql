@@ -7,7 +7,7 @@ CREATE TABLE user_account
 ( id            SERIAL PRIMARY KEY NOT NULL
 , first_name    VARCHAR(30)        NOT NULL
 , last_name     VARCHAR(30)        NOT NULL
-, email         VARCHAR(30)        NOT NULL
+, username      VARCHAR(30)        NOT NULL UNIQUE
 , password      VARCHAR(255)       NOT NULL
 );
 
@@ -44,7 +44,7 @@ CREATE TABLE notes
 INSERT INTO user_account
 ( first_name
 , last_name
-, email
+, username
 , password
 )
 VALUES
