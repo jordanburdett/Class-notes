@@ -51,7 +51,7 @@ VALUES
 ( 'Jordan'
 , 'Burdett'
 , 'jordan'
-, 'password');
+, '$2b$10$iY5fbxstpLjCLJtjasHkvuM7.2eH7x10qQyO7yVOrhO5MNoRkGaCa');
 
 
 INSERT INTO class
