@@ -255,6 +255,35 @@ express()
 
 
   })
+  .get('/getAssignmentNote', authenticateToken, (req, res) => {
+    const classId = req.query.classId;
+    const assignId = req.query.assignId;
+
+    var sql = "SELECT * FROM notes WHERE assign_id = " + assignId + " AND class_id = " + classId;
+          
+      pool.query(sql, (err, result) => {
+        if (err) {
+          
+          res.json({
+            error : err,
+            msg : "Error in query",
+            isNote : false
+          });
+        }
+        else {
+          
+          res.json({
+            error : false,
+            msg : "query successful",
+            rows : result.rows,
+            count : result.rowCount,
+            isNote : true
+          });
+        }
+
+
+      })
+  })
   .get('/amIloggedIn', authenticateToken, (req, res) => {
     console.log("Yupper I am logged in!");
   })

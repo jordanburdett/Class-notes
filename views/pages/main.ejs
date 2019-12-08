@@ -192,9 +192,19 @@
 
 
                         assignments.forEach(value => {
+
+                            console.log("JORDAN RIGHT HERE ASSIGNMENT " + value);
+                            var assignment = {
+                                id: value.id,
+                                title: value.title,
+                                desc: value.description,
+                                classId: cardId
+                            }
                             newAssign += "<div class='flex-assignments' id='assignment" + value.id + "'>";
                             newAssign += "<div class='flex-assignments-title' id='assignmentTitle" + value.id + "'>";
+                            newAssign += "<a href='javascript:showAssignment(" + JSON.stringify(assignment) + ")'>";
                             newAssign += value.title;
+                            newAssign += "</a>";
 
                             if (value.finished) {
                                 newAssign += "<i class='fas fa-check-square checked' onclick='checkAssign(" + value.id + ")' id='assignIcon" + value.id + "'></i>"
@@ -304,7 +314,13 @@
             openAdvancedEditor('classNoteContent' + classId, document.getElementById('classNoteContent' + classId).innerHTML, classId);
         }
 
-
+        /****************
+        * param: id, classId
+        * optional param: assignmentID
+        * id: the id of the quill enhanced editor
+        * classId: id of the class
+        * assignmentId: id of the assignment the note belongs too
+        ****************/
         function saveNote(id, classId, assignmentId) {
             let innerText = document.getElementById(id).innerText;
 
@@ -371,7 +387,7 @@
 
                                     document.getElementById('classDisplay').innerHTML = "";
                                     loadClasses();
-                                    
+
                                 }
                             }
                         });
@@ -388,7 +404,7 @@
         }
 
         function checkAssign(assignmentId) {
-            
+
 
             if (document.getElementById('assignIcon' + assignmentId).className == "fas fa-check-square check-icon") {
                 document.getElementById('assignIcon' + assignmentId).className = "fas fa-check-square checked";
@@ -397,20 +413,20 @@
                 console.log("in check assignment " + assignmentId);
 
                 $.ajax(
-                        {
-                            url: '/checkAssign',
-                            type: 'POST',
-                            dataType: 'json',
-                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
-                            data: {
-                                assignmentId: assignmentId
-                            },
-                            success: async function (data) {
-                                console.log("assignmentChecked");
-                                console.log(data);
+                    {
+                        url: '/checkAssign',
+                        type: 'POST',
+                        dataType: 'json',
+                        headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                        data: {
+                            assignmentId: assignmentId
+                        },
+                        success: async function (data) {
+                            console.log("assignmentChecked");
+                            console.log(data);
 
-                            }
-                        });
+                        }
+                    });
 
             }
             else {
@@ -418,19 +434,19 @@
                 //update database that the assignment is not done.
                 console.log("remove check");
                 $.ajax(
-                        {
-                            url: '/unCheckAssign',
-                            type: 'POST',
-                            dataType: 'json',
-                            headers: { 'accessToken': sessionStorage.getItem("accessToken") },
-                            data: {
-                                assignmentId: assignmentId
-                            },
-                            success: async function (data) {
-                                console.log("assignmentUnChecked");
-                                console.log(data);
-                            }
-                        });
+                    {
+                        url: '/unCheckAssign',
+                        type: 'POST',
+                        dataType: 'json',
+                        headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                        data: {
+                            assignmentId: assignmentId
+                        },
+                        success: async function (data) {
+                            console.log("assignmentUnChecked");
+                            console.log(data);
+                        }
+                    });
 
             }
         }
@@ -550,6 +566,44 @@
                         }
                     }
                 });
+        }
+
+
+        function showAssignment(assignment) {
+            console.log(assignment);
+
+
+
+            // query the information about notes
+            $.ajax(
+                {
+                    url: '/getAssignmentNote?classId=' + assignment.classId + '&assignId=' + assignment.id,
+                    type: 'GET',
+                    dataType: 'json',
+                    headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                    success: (note) => {
+
+
+                        let showAssignment = "<div class='create-card-container' id='assignmentCard'>";
+                        showAssignment += "<div class='class-title-expanded'>" + assignment.title + "</div>";
+                        showAssignment += "<div class='class-content-expanded'>" + assignment.desc + "</div>";
+                        
+                        if (note.isNote && note.count > 0) {
+                            //display the note
+                        }
+                        else {
+
+                            showAssignment += "<button class='button-expand' onclick='createNote()' id='makeNoteButton'>Make Note</button>";
+                        }
+
+
+
+                        $('#classDisplay').append(showAssignment);
+                    }
+                });
+
+
+            
         }
 
 
