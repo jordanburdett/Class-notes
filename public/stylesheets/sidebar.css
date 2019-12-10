@@ -185,7 +185,6 @@ body {
     display: flex;
     flex-direction: row;
     width: 80%;
-    margin-left: 10%;
     margin-right: 10%;
     flex-wrap:wrap;
     transition: all 0.5s;
