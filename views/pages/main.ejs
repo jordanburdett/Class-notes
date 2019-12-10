@@ -219,7 +219,7 @@
 
                             newAssign += "</div>";
                         })
-
+                        newAssign += "<button class='class-button' id='addAssignButton' onclick='addNewAssignment(" + cardId + ")'>New Assignment</button>";
                         newAssign += "</div>";
                         newAssign += "<div id='noteContainer" + cardId + "' class='flex-note-container'></div>";
 
@@ -286,10 +286,24 @@
         }
 
         function createNote(cardId) {
+
+
             let card = document.getElementById('noteContainer' + cardId);
             document.getElementById('noteContainer' + cardId).innerHTML += "<h2 id='classNoteHeader" + cardId + "' class='flex-header'> Note: </h1>";
             document.getElementById('noteContainer' + cardId).innerHTML += "<div id='classNoteContent" + cardId + "' class='class-note'></div>";
             openAdvancedEditor("classNoteContent" + cardId, '', cardId)
+
+
+
+        }
+
+        function createAssignmentNote(assignmentInfo) {
+            console.log("assignment note ", assignmentInfo);
+            console.log(assignmentInfo.cardId);
+            let card = document.getElementById(assignmentInfo.cardId);
+            document.getElementById(assignmentInfo.cardId).innerHTML += "<h2 id='assignNoteHeader' class='flex-header'> Note: </h1>";
+            document.getElementById(assignmentInfo.cardId).innerHTML += "<div id='assignNoteContent' class='class-note'></div>";
+            openAdvancedEditor('assignNoteContent', '', assignmentInfo)
         }
 
         /************
@@ -305,13 +319,111 @@
             });
 
             // change the save button here
-            document.getElementById('makeNoteButton' + cardId).innerText = "Save Note";
 
-            document.getElementById('makeNoteButton' + cardId).setAttribute("onClick", "saveNote( 'editor', " + cardId + ")");
+            if (cardId.cardId != "assignmentCard") {
+
+                document.getElementById('makeNoteButton' + cardId).innerText = "Save Note";
+                document.getElementById('makeNoteButton' + cardId).setAttribute("onClick", "saveNote( 'editor', " + cardId + ")");
+
+
+            }
+            else {
+                document.getElementById('editNoteButton').setAttribute('onClick', 'saveEditAssign(' + JSON.stringify(cardId) + ')')
+            document.getElementById('editNoteButton').innerText = "Save Note";
+            }
+        }
+
+        function saveAssignNote(assignmentInfo) {
+            let innerText = document.getElementById('editor').innerText;
+            console.log(innerText);
+            if (innerText.length > 0) {
+                var content = document.getElementById('editor').innerHTML;
+                console.log(content);
+                let array = content.split('contenteditable="true">', 2);
+                content = array[1];
+                console.log(content);
+                array = content.split('</div>', 2);
+                content = array[0];
+                console.log(content);
+            }
+
+            var classId = assignmentInfo['classId'];
+            var assignId = assignmentInfo['assignId'];
+            console.log("classId " + classId + " assignId " + assignId + " content ", content);
+
+            $.ajax(
+                {
+                    url: '/saveAssignNote',
+                    type: 'POST',
+                    dataType: 'json',
+                    headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                    data: {
+
+                        classId: classId,
+                        content: content,
+                        assignmentId: assignId
+
+                    },
+                    success: (data) => {
+                        console.log("saveNote post finished");
+
+
+                        document.getElementById('classDisplay').innerHTML = "";
+                        loadClasses();
+                    }
+                }
+            );
         }
 
         function editNote(classId) {
             openAdvancedEditor('classNoteContent' + classId, document.getElementById('classNoteContent' + classId).innerHTML, classId);
+        }
+
+        function editAssignNote(assignInfo) {
+            openAdvancedEditor('assignmentNote', document.getElementById('assignmentNote').innerHTML, assignInfo);
+            
+        }
+
+        function saveEditAssign(assignmentInfo) {
+            let innerText = document.getElementById('editor').innerText;
+            console.log(innerText);
+            if (innerText.length > 0) {
+                var content = document.getElementById('editor').innerHTML;
+                console.log(content);
+                let array = content.split('contenteditable="true">', 2);
+                content = array[1];
+                console.log(content);
+                array = content.split('</div>', 2);
+                content = array[0];
+                console.log(content);
+            }
+
+            var classId = assignmentInfo['classId'];
+            var assignId = assignmentInfo['assignId'];
+
+
+            $.ajax(
+                {
+                    url: '/updateAssignmentNote',
+                    type: 'POST',
+                    dataType: 'json',
+                    headers: { 'accessToken': sessionStorage.getItem("accessToken") },
+                    data: {
+
+                        classId: classId,
+                        content: content,
+                        assignmentId: assignId
+
+                    },
+                    success: (data) => {
+                        console.log("saveNote post finished");
+
+
+                        document.getElementById('classDisplay').innerHTML = "";
+                        loadClasses();
+                    }
+                }
+            );
         }
 
         /****************
@@ -582,28 +694,41 @@
                     dataType: 'json',
                     headers: { 'accessToken': sessionStorage.getItem("accessToken") },
                     success: (note) => {
-
+                        console.log("note: ", note);
 
                         let showAssignment = "<div class='create-card-container' id='assignmentCard'>";
                         showAssignment += "<div class='class-title-expanded'>" + assignment.title + "</div>";
-                        showAssignment += "<div class='class-content-expanded'>" + assignment.desc + "</div>";
-                        
+                        showAssignment += "<div class='class-content-expanded' style='width:100%;'>" + assignment.desc + "</div>";
+
                         if (note.isNote && note.count > 0) {
                             //display the note
+                            const assignmentInfo = {
+                                cardId: "assignmentCard",
+                                classId: assignment.classId,
+                                assignId: assignment.id
+                            }
+                            showAssignment += "<h2 id='assignmentNoteHeader' class='flex-header'> Note: </h1>";
+                            showAssignment += "<div id='assignmentNote' class='class-note'>" + note.note_content + "</div>";
+                            showAssignment += "<button class='button-expand' id='editNoteButton' onclick='editAssignNote(" + JSON.stringify(assignmentInfo) + ")'>Edit Note</button>";
                         }
                         else {
-
-                            showAssignment += "<button class='button-expand' onclick='createNote()' id='makeNoteButton'>Make Note</button>";
+                            const assignmentInfo = {
+                                cardId: "assignmentCard",
+                                classId: assignment.classId,
+                                assignId: assignment.id
+                            }
+                            showAssignment += "<button class='button-expand' onclick='createAssignmentNote(" + JSON.stringify(assignmentInfo) + ")' id='makeNoteButton'>Make Note</button>";
                         }
 
-
+                        showAssignment += "<button class='button-expand danger' onclick='removeElement(\"assignmentCard\")' id='closeAssignment'>close</button>";
+                        showAssignment += "</div>"
 
                         $('#classDisplay').append(showAssignment);
                     }
                 });
 
 
-            
+
         }
 
 

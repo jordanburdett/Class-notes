@@ -262,6 +262,7 @@ express()
     var sql = "SELECT * FROM notes WHERE assign_id = " + assignId + " AND class_id = " + classId;
           
       pool.query(sql, (err, result) => {
+        console.log(result);
         if (err) {
           
           res.json({
@@ -271,18 +272,80 @@ express()
           });
         }
         else {
-          
+
+          if (result.rowCount > 0) {
+          console.log(result.rows);
           res.json({
             error : false,
             msg : "query successful",
             rows : result.rows,
             count : result.rowCount,
-            isNote : true
+            isNote : true,
+            note_title : result.rows[0].note_title,
+            note_content : result.rows[0].note_content
+
           });
+
+        }
+        else {
+          res.json({
+            error : false,
+            msg : "query successful But contained no rows",
+            rows : result.rows,
+            count : result.rowCount,
+            isNote : false
+          });
+
+
         }
 
 
+        }
       })
+  })
+  .post('/saveAssignNote', authenticateToken, (req, res) => {
+    console.log("IN save assignNote");
+    console.log(req.body.classId);
+    console.log(req.body.content);
+    console.log(req.body.assignmentId);
+
+    const user_id = req.user.id;
+
+
+    var sql = "INSERT INTO notes (class_id, user_id, assign_id, note_content, date_modified)";
+    sql += " VALUES (" + req.body.classId + ", " + user_id + ", " + req.body.assignmentId + ", '" + req.body.content + "', CURRENT_DATE)"
+
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.log("error updating info");
+        console.log(err);
+        res.json({error : true, msg : "error in query"});
+      }
+      else {
+        console.log("Successfully inserted into notes.")
+        res.json({error : false, msg : "successfully updated note"});
+      }
+    });
+
+  })
+  .post('/updateAssignmentNote', authenticateToken, (req, res) => {
+
+    console.log(req.body.classId);
+    console.log(req.body.assignmentId);
+    console.log(req.body.content);
+    
+    var sql = "UPDATE notes SET note_content = '" + req.body.content + "' WHERE class_id = " + req.body.classId + " AND assign_Id = " + req.body.assignmentId;
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.log("error updating info");
+        console.log(err);
+        res.json({error : true, msg : "error in query"});
+      }
+      else {
+        console.log("Successfully updated note.");
+        res.json({error : false, msg : "successfully updated note"});
+      }
+    });
   })
   .get('/amIloggedIn', authenticateToken, (req, res) => {
     console.log("Yupper I am logged in!");

@@ -131,6 +131,10 @@ body {
     
 }
 
+.danger {
+    background-color: rgb(253, 74, 74);
+    color: white;
+}
 .flex-assignments-container {
     display: flex;
     flex-direction: column;
@@ -144,6 +148,7 @@ body {
 
 .flex-header {
     width:100%;
+    padding: 3%;
 }
 
 .flex-note-container {

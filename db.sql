@@ -34,7 +34,7 @@ CREATE TABLE notes
 , class_id      INT                 NOT NULL REFERENCES class(id)
 , user_id       INT                 NOT NULL REFERENCES user_account(id)
 , assign_id     INT                 NOT NULL REFERENCES assignments(id)
-, note_title    VARCHAR(60)         NOT NULL
+, note_title    VARCHAR(60)         
 , note_content  text                NOT NULL
 , date_modified DATE                NOT NULL
 );
