@@ -22,6 +22,7 @@ function authenticateToken(req, res, next) {
   if (user == null) {
     res.status(403);
   }
+  
 
   req.user = user;
   next();

@@ -184,7 +184,7 @@ body {
     position: absolute;
     display: flex;
     flex-direction: row;
-    width: 100%;
+    width: 80%;
     flex-wrap:wrap;
     transition: all 0.5s;
 }
