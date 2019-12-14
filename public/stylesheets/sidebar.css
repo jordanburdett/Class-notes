@@ -10,7 +10,7 @@ body {
 }
 
 .hover:hover {
-    color: lightblue;
+    color: rgb(8, 8, 8);
     background-color: rgb(225, 226, 226);
 }
 
