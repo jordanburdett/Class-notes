@@ -9,7 +9,10 @@ body {
     background-color:var(--background-color);
 }
 
-
+.hover:hover {
+    color: lightblue;
+    background-color: rgb(225, 226, 226);
+}
 
 .flex-container {
     position:absolute;
