@@ -246,9 +246,11 @@ express()
     pool.query(sql, (err, result) => {
       if (err) {
         console.log("error updating info");
+        res.json(true);
       }
       else {
         console.log("Successfully updated.")
+        res.json(false);
       }
     })
 
