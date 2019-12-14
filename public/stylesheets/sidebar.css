@@ -37,15 +37,24 @@ body {
     padding-bottom: 5%;
 }
 
+.label {
+    width: 100%;
+    font-size: 16px;
+    color: white;
+    margin-left: 10%;
+}
+
 .add-title {
-    text-align: center;
-    width: 80%;
+    text-align: left;
+    width: 50%;
     align-self:center;
-    font-size: 30px;
+    font-size: 20px;
     background-color: var(--background-accent);
     color: whitesmoke;
     margin-left:10%;
     margin-bottom: 5%;
+    margin-right: 40%;
+    padding: 1%;
     border:none;
 }
 

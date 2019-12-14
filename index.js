@@ -11,6 +11,7 @@ const pool = new Pool({ connectionString: connectionString });
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 
@@ -22,7 +23,7 @@ function authenticateToken(req, res, next) {
   if (user == null) {
     res.status(403);
   }
-  
+
 
   req.user = user;
   next();
@@ -133,8 +134,6 @@ express()
 
           const user = {
             username: username,
-            first_name: result.rows[0].first_name,
-            last_name: result.rows[0].last_name,
             id: result.rows[0].id
           };
 
@@ -160,7 +159,7 @@ express()
 
   })
 
-  .post('/checkAssign',authenticateToken, (req, res) => {
+  .post('/checkAssign', authenticateToken, (req, res) => {
     //get user id first or checked if we are logged in
     let user_id = req.user.id;
     let assignmentId = req.body.assignmentId;
@@ -261,48 +260,48 @@ express()
     const assignId = req.query.assignId;
 
     var sql = "SELECT * FROM notes WHERE assign_id = " + assignId + " AND class_id = " + classId;
-          
-      pool.query(sql, (err, result) => {
-        console.log(result);
-        if (err) {
-          
-          res.json({
-            error : err,
-            msg : "Error in query",
-            isNote : false
-          });
-        }
-        else {
 
-          if (result.rowCount > 0) {
+    pool.query(sql, (err, result) => {
+      console.log(result);
+      if (err) {
+
+        res.json({
+          error: err,
+          msg: "Error in query",
+          isNote: false
+        });
+      }
+      else {
+
+        if (result.rowCount > 0) {
           console.log(result.rows);
           res.json({
-            error : false,
-            msg : "query successful",
-            rows : result.rows,
-            count : result.rowCount,
-            isNote : true,
-            note_title : result.rows[0].note_title,
-            note_content : result.rows[0].note_content
+            error: false,
+            msg: "query successful",
+            rows: result.rows,
+            count: result.rowCount,
+            isNote: true,
+            note_title: result.rows[0].note_title,
+            note_content: result.rows[0].note_content
 
           });
 
         }
         else {
           res.json({
-            error : false,
-            msg : "query successful But contained no rows",
-            rows : result.rows,
-            count : result.rowCount,
-            isNote : false
+            error: false,
+            msg: "query successful But contained no rows",
+            rows: result.rows,
+            count: result.rowCount,
+            isNote: false
           });
 
 
         }
 
 
-        }
-      })
+      }
+    })
   })
   .post('/saveAssignNote', authenticateToken, (req, res) => {
     console.log("IN save assignNote");
@@ -320,11 +319,11 @@ express()
       if (err) {
         console.log("error updating info");
         console.log(err);
-        res.json({error : true, msg : "error in query"});
+        res.json({ error: true, msg: "error in query" });
       }
       else {
         console.log("Successfully inserted into notes.")
-        res.json({error : false, msg : "successfully updated note"});
+        res.json({ error: false, msg: "successfully updated note" });
       }
     });
 
@@ -334,26 +333,107 @@ express()
     console.log(req.body.classId);
     console.log(req.body.assignmentId);
     console.log(req.body.content);
-    
+
     var sql = "UPDATE notes SET note_content = '" + req.body.content + "' WHERE class_id = " + req.body.classId + " AND assign_Id = " + req.body.assignmentId;
     pool.query(sql, (err, result) => {
       if (err) {
         console.log("error updating info");
         console.log(err);
-        res.json({error : true, msg : "error in query"});
+        res.json({ error: true, msg: "error in query" });
       }
       else {
         console.log("Successfully updated note.");
-        res.json({error : false, msg : "successfully updated note"});
+        res.json({ error: false, msg: "successfully updated note" });
       }
     });
+  })
+  .post('/saveNewAssignment', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const classId = req.body.classId;
+    const title = req.body.title;
+    const content = req.body.desc;
+
+    var sql = "INSERT INTO assignments (class_id, user_id, title, description, due_date, finished)";
+    sql += `VALUES (${classId}, ${userId}, '${title}', '${content}', CURRENT_DATE, FALSE)`;
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.log("error updating info");
+        console.log(err);
+        res.json({ error: true, msg: "error in query" });
+      }
+      else {
+        console.log("Successfully updated note.");
+        res.json({ error: false, msg: "successfully updated note" });
+      }
+    });
+  })
+  .post('/registerNewUser', (req, res) => {
+    console.log("registering new user");
+    const username = req.body.username;
+    const password = req.body.password;
+
+    // check the username to make sure its unique
+    var sql = "SELECT username from user_account where username = '" + username + "'";
+    pool.query(sql, (err, result) => {
+      if (err) {
+        console.log("error updating info");
+        console.log(err);
+        res.json({ error: true, msg: "error in query" });
+        return;
+      }
+      else {
+        console.log(result.rows);
+
+        if (result.rows[0]) {
+          console.log("username taken");
+          res.json({ error: true, msg: "username Taken", code: 1 });
+          return;
+        }
+
+        bcrypt.hash(password, saltRounds, (err, hashPassword) => {
+          sql = `INSERT INTO user_account (username, password) VALUES ('${username}', '${hashPassword}')`
+          pool.query(sql, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.json({ error: true, msg: "error inserting user" })
+              return;
+            }
+
+            console.log("inserted successfully");
+            console.log(result);
+
+
+
+            // get id of inserted
+            sql = `SELECT id from user_account where username = '${username}'`;
+            pool.query(sql, (err, result) => {
+              const id = result.rows[0].id;
+              console.log("THE ID of newly created account is ", id);
+
+              var user = {
+                username: username,
+                id: id
+              }
+
+              const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+
+              res.json({
+                error: false,
+                msg: "successfully registered account",
+                accessToken: token
+              });
+            });
+
+
+
+          })
+        })
+
+      }
+    });
+
   })
   .get('/amIloggedIn', authenticateToken, (req, res) => {
     console.log("Yupper I am logged in!");
   })
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
-
-
-
-
-
+  .listen(PORT, () => console.log(`Listening on ${PORT}`))

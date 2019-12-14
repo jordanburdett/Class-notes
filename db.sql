@@ -5,8 +5,6 @@ drop table notes CASCADE;
 
 CREATE TABLE user_account
 ( id            SERIAL PRIMARY KEY NOT NULL
-, first_name    VARCHAR(30)        NOT NULL
-, last_name     VARCHAR(30)        NOT NULL
 , username      VARCHAR(30)        NOT NULL UNIQUE
 , password      VARCHAR(255)       NOT NULL
 );
@@ -42,15 +40,13 @@ CREATE TABLE notes
 
 /* INSERTS */
 INSERT INTO user_account
-( first_name
-, last_name
-, username
+( 
+ username
 , password
 )
 VALUES
-( 'Jordan'
-, 'Burdett'
-, 'jordan'
+( 
+'jordan'
 , '$2b$10$iY5fbxstpLjCLJtjasHkvuM7.2eH7x10qQyO7yVOrhO5MNoRkGaCa');
 
 

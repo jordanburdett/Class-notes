@@ -19,17 +19,10 @@
                     <p>Sidebar</p>
 
                     <li>
-                        <a href="#">About</a>
-                    </li>
-                    <li>
-                        <a href="#">Dashboard</a>
-                    </li>
-
-                    <li>
                         <a href="javascript:addClass();">Add Classes</a>
                     </li>
                     <li>
-                        <a href="#">Account Settings</a>
+                        <a href="javascript:logout();">Logout</a>
                     </li>
                 </ul>
             </div>
@@ -138,6 +131,7 @@
         var active = false;
         function toggleSideBar() {
 
+            if (sessionStorage.getItem("accessToken") == null) return;
 
             $('#sidebar').toggleClass('active');
 
@@ -303,7 +297,8 @@
             let card = document.getElementById(assignmentInfo.cardId);
             document.getElementById(assignmentInfo.cardId).innerHTML += "<h2 id='assignNoteHeader' class='flex-header'> Note: </h1>";
             document.getElementById(assignmentInfo.cardId).innerHTML += "<div id='assignNoteContent' class='class-note'></div>";
-            openAdvancedEditor('assignNoteContent', '', assignmentInfo)
+            openAdvancedEditor('assignNoteContent', '', assignmentInfo);
+            document.getElementById('makeNoteButton').setAttribute('onClick', 'saveAssignNote(' + JSON.stringify(assignmentInfo) + ')')
         }
 
         /************
@@ -328,12 +323,12 @@
 
             }
             else {
-                document.getElementById('editNoteButton').setAttribute('onClick', 'saveEditAssign(' + JSON.stringify(cardId) + ')')
-            document.getElementById('editNoteButton').innerText = "Save Note";
+
             }
         }
 
         function saveAssignNote(assignmentInfo) {
+            console.log("IN SAVE ASSIGN NOTE");
             let innerText = document.getElementById('editor').innerText;
             console.log(innerText);
             if (innerText.length > 0) {
@@ -377,11 +372,14 @@
 
         function editNote(classId) {
             openAdvancedEditor('classNoteContent' + classId, document.getElementById('classNoteContent' + classId).innerHTML, classId);
+
         }
 
         function editAssignNote(assignInfo) {
             openAdvancedEditor('assignmentNote', document.getElementById('assignmentNote').innerHTML, assignInfo);
-            
+            document.getElementById('editNoteButton').setAttribute('onClick', 'saveEditAssign(' + JSON.stringify(assignInfo) + ')');
+            document.getElementById('editNoteButton').innerText = "Save Note";
+
         }
 
         function saveEditAssign(assignmentInfo) {
@@ -625,18 +623,20 @@
 
         function showLogin() {
             let classCode = "<div class='create-card-container' id='loginCard'>";
-            classCode += "<div class='class-title-expanded'>Login</div>";
+            classCode += "<div class='class-title-expanded'>Login/Register</div>";
 
-            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Username</div>";
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;' id='usernameLabel'>Username</div>";
             classCode += "<input type='text' class='add-title' id='username' name='username'></input>";
 
-            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;'>Password</div>";
+            classCode += "<div style='color:whitesmoke; width:100%; padding: 2%; padding-bottom: 0.5%;' id='passwordLabel'>Password</div>";
             classCode += "<input type='password' class='add-title' id='password' name='password'></input>";
 
-            classCode += "<button class='button-expand' onclick='login()' id='loginButton'>Login</button>"
+            classCode += "<button class='button-expand' onclick='login()' id='loginButton'>Login</button>";
+            classCode += "<button class='button-expand' onclick='registerNewUser()' id='registerButton'>Register New User</button>";
             classCode += "</div>";
 
             $('#classDisplay').append(classCode);
+            document.getElementById('username').focus();
         }
 
         async function login() {
@@ -667,10 +667,15 @@
                             removeElement('loginCard');
                         }
                         else {
-                            switch (data['error']) {
+                            switch (data['code']) {
                                 case 1: //invalid username
+                                    document.getElementById('usernameLabel').innerHTML += " <span style='color:red; margin-left:5px;'>username not found.. Click create new user to make a user!</span>";
+                                    document.getElementById('username').focus();
                                     break;
                                 case 2: //invalid password
+
+                                    document.getElementById('passwordLabel').innerHTML += " <span style='color:red; margin-left:5px;'>invalid password.. Please try again!</span>";
+                                    document.getElementById('password').focus();
                                     break;
                                 default: //unknown error....
                                     break;
@@ -727,6 +732,121 @@
                     }
                 });
 
+
+
+        }
+
+        function addNewAssignment(classId) {
+            // create add new class window
+            openNewAssignmentWindow(classId);
+        }
+
+        /**********
+         *  this is a simple post to save the assignment but uses
+         *  Javascripts fetch API instead of jquery's .ajax
+         * */
+        async function saveNewAssignment(classId) {
+            // ajax request to save the assignment
+            const data = await postData('/saveNewAssignment',
+
+
+                {
+                    classId: classId,
+                    title: document.getElementById('addTitle').value,
+                    desc: document.getElementById('addDesc').value
+                });
+
+            console.log(JSON.stringify(data));
+
+            if (data.error) {
+                console.log("error in query");
+            }
+            else {
+                console.log("in function");
+                removeElement('newAssignWindow');
+                document.getElementById('classDisplay').innerHTML = "";
+                loadClasses();
+            }
+        }
+
+        async function postData(url = '', data) {
+            console.log(data);
+            const response = await fetch(url, {
+                method: 'POST',
+                mode: "cors",
+                cache: "no-cache",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'accessToken': sessionStorage.getItem("accessToken")
+                },
+                body: JSON.stringify(data)
+            });
+
+            return await response.json();
+        }
+
+        function openNewAssignmentWindow(classId) {
+            let newWindow = "<div class='create-card-container' id='newAssignWindow'>";
+            newWindow += "<div class='class-title-expanded'>Add Assignment</div>";
+            newWindow += "<span class='label'>Title:</span>";
+            newWindow += "<input type='text' class='add-title' id='addTitle'></input>";
+            newWindow += "<span class='label'>Desc:</span>";
+            newWindow += "<input type='text' class='add-title' id='addDesc'></input>"
+            newWindow += "<button class='button-expand' onclick='saveNewAssignment(" + classId + ")' id='saveAssign'>Save Assignment</button>"
+            newWindow += "<button class='button-expand' style='background-color:red;' onclick='removeElement(\"newAssignWindow\")'>Cancel</button>";
+            newWindow += "</div>";
+
+
+            $('#classDisplay').append(newWindow);
+        }
+
+        function logout() {
+            toggleSideBar();
+            sessionStorage.clear();
+            document.getElementById('classDisplay').innerHTML = "";
+            showLogin();
+        }
+
+
+        async function registerNewUser() {
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username.length < 5) {
+                document.getElementById('usernameLabel').innerHTML += " <span style='color:red; margin-left:5px;'>Must be at least 5 characters</span>";
+                document.getElementById('username').focus();
+                return;
+            }
+
+            if (password.length < 5) {
+                document.getElementById('passwordLabel').innerHTML += " <span style='color:red; margin-left:5px;'>password must be at least 5 characters</span>";
+                document.getElementById('password').focus();
+                return;
+            }
+
+            const data = await postData('/registerNewUser',
+                {
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value
+                });
+
+            
+
+            if (data.error) {
+                console.log(data);
+                if (data.code == 1) {
+                    document.getElementById('usernameLabel').innerHTML += " <span style='color:red; margin-left:5px;'>Username already taken, try logging in</span>";
+                    document.getElementById('username').focus();
+                }
+                return;
+            }
+
+
+
+            sessionStorage.setItem("accessToken", data.accessToken);
+            loadClasses();
+            removeElement('loginCard');
 
 
         }
